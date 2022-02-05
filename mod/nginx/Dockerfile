@@ -22,3 +22,7 @@ COPY --from=builder /bbb-playback/build /www/playback/presentation/2.3
 COPY ./bbb /etc/nginx/bbb
 COPY ./bigbluebutton /etc/nginx/conf.d/default.conf
 COPY ./nginx.conf /etc/nginx/nginx.conf
+
+COPY docker-entrypoint.sh /
+ENTRYPOINT ["/docker-entrypoint.sh"]
+CMD ["nginx", "-g", "daemon off;"]

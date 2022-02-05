@@ -119,6 +119,7 @@ services:
   nginx:
     build: mod/nginx
     restart: unless-stopped
+    env_file: .env
     depends_on:
       - etherpad
       - webrtc-sfu
