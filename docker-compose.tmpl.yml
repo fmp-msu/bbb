@@ -140,6 +140,7 @@ services:
       
       - "traefik.http.routers.bbb-nginx-https.tls=true"
       - "traefik.http.routers.bbb-nginx-https.tls.certresolver=${TRAEFIK_CERT_RESOLVER:-staging-resolver}"
+      - "traefik.http.routers.bbb-nginx-https.tls.options=max-tls-12@file"
       - "traefik.http.routers.bbb-nginx-https.entrypoints=websecure"
       - "traefik.http.routers.bbb-nginx-https.rule=Host(`${DOMAIN}`)"
     networks:
@@ -388,6 +389,7 @@ services:
       
       - "traefik.http.routers.bbb-greenlight-https.tls=true"
       - "traefik.http.routers.bbb-greenlight-https.tls.certresolver=${TRAEFIK_CERT_RESOLVER:-staging-resolver}"
+      - "traefik.http.routers.bbb-greenlight-https.tls.options=max-tls-12@file"
       - "traefik.http.routers.bbb-greenlight-https.entrypoints=websecure"
       - "traefik.http.routers.bbb-greenlight-https.rule=Host(`${DOMAIN}`) && PathPrefix(`${RELATIVE_URL_ROOT:-/b}`)"
     networks:
