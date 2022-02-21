@@ -121,6 +121,7 @@ services:
   nginx:
     build: mod/nginx
     restart: unless-stopped
+    env_file: .env
     depends_on:
       - etherpad
       - webrtc-sfu
@@ -129,9 +130,27 @@ services:
       - bigbluebutton:/var/bigbluebutton
       - html5-static:/html5-static:ro
       - ${DEFAULT_PRESENTATION:-/dev/null}:/www/default.pdf
-    network_mode: host
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=traefik_overlay"
+
+      - "traefik.http.services.bbb-nginx.loadbalancer.server.port=80"
+
+      - "traefik.http.routers.bbb-nginx-http.entrypoints=web"
+      - "traefik.http.routers.bbb-nginx-http.rule=Host(`${DOMAIN}`)"
+      - "traefik.http.routers.bbb-nginx-http.middlewares=redirect-to-https@file"
+      
+      - "traefik.http.routers.bbb-nginx-https.tls=true"
+      - "traefik.http.routers.bbb-nginx-https.tls.certresolver=${TRAEFIK_CERT_RESOLVER:-staging-resolver}"
+      - "traefik.http.routers.bbb-nginx-https.tls.options=max-tls-12@file"
+      - "traefik.http.routers.bbb-nginx-https.entrypoints=websecure"
+      - "traefik.http.routers.bbb-nginx-https.rule=Host(`${DOMAIN}`)"
+    networks:
+      bbb-net:
+        ipv4_address: 10.7.7.34
+      traefik:
     extra_hosts:
-      - "host.docker.internal:10.7.7.1"
+      - "host.docker.internal:10.7.7.34"
       - "bbb-web:10.7.7.2"
       - "etherpad:10.7.7.4"
       - "webrtc-sfu:10.7.7.10"
@@ -365,15 +384,31 @@ services:
       DB_NAME: greenlight
       DB_USERNAME: postgres
       DB_PASSWORD: ${POSTGRESQL_SECRET:-password}
-      {{ if isTrue .Env.DEV_MODE }}
-      BIGBLUEBUTTON_ENDPOINT: http://10.7.7.1:48087/bigbluebutton/api/
-      {{else}}
-      BIGBLUEBUTTON_ENDPOINT: https://${DOMAIN}/bigbluebutton/api/
-      {{end}}
+      BIGBLUEBUTTON_ENDPOINT: http://${DOMAIN}/bigbluebutton/api/
       BIGBLUEBUTTON_SECRET: ${SHARED_SECRET}
       SECRET_KEY_BASE: ${RAILS_SECRET}
-    ports:
-      - 10.7.7.1:5000:80
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=traefik_overlay"
+
+      - "traefik.http.services.bbb-greenlight.loadbalancer.server.port=80"
+
+      - "traefik.http.routers.bbb-greenlight-http.entrypoints=web"
+      - "traefik.http.routers.bbb-greenlight-http.rule=Host(`${DOMAIN}`)"
+      - "traefik.http.routers.bbb-greenlight-http.middlewares=redirect-to-https@file"
+      
+      - "traefik.http.routers.bbb-greenlight-https.tls=true"
+      - "traefik.http.routers.bbb-greenlight-https.tls.certresolver=${TRAEFIK_CERT_RESOLVER:-staging-resolver}"
+      - "traefik.http.routers.bbb-greenlight-https.tls.options=max-tls-12@file"
+      - "traefik.http.routers.bbb-greenlight-https.entrypoints=websecure"
+      - "traefik.http.routers.bbb-greenlight-https.rule=Host(`${DOMAIN}`) && PathPrefix(`${RELATIVE_URL_ROOT:-/b}`)"
+    networks:
+      default:
+      bbb-net:
+        ipv4_address: 10.7.7.3
+      traefik:
+    extra_hosts:
+      - ${DOMAIN}:10.7.7.34
   postgres:
     image: postgres:12-alpine
     restart: unless-stopped
@@ -395,8 +430,8 @@ services:
   prometheus-exporter:
     image: greenstatic/bigbluebutton-exporter:v0.7.0-preview2
     restart: unless-stopped
-    environment:
-      API_BASE_URL: http://10.7.7.1:48087/bigbluebutton/api/
+    environment: 
+      API_BASE_URL: http://10.7.7.34/bigbluebutton/api/
       API_SECRET: ${SHARED_SECRET}
       RECORDINGS_METRICS_READ_FROM_DISK: "${ENABLE_PROMETHEUS_EXPORTER_OPTIMIZATION:-false}"
     networks:
@@ -424,3 +459,5 @@ networks:
       driver: default
       config:
         - subnet: "10.7.7.0/24"
+  traefik:
+    name: traefik_overlay

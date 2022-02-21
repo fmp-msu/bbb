@@ -18,8 +18,8 @@ upstream poolhtml5servers {
 }
 
 server {
-  listen 48087 default_server;
-  listen [::]:48087 default_server;
+  listen 80 default_server;
+  listen [::]:80 default_server;
   server_name _;
   access_log /dev/stdout;
   absolute_redirect off;
@@ -31,7 +31,7 @@ server {
 
   # redirect to greenlight
   location = / {
-      return 302 /b;
+      return 302 $RELATIVE_URL_ROOT;
   }
 
   # Include specific rules for record and playback
