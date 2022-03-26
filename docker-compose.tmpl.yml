@@ -354,6 +354,8 @@ services:
     image: instrumentisto/coturn:4.5
     restart: unless-stopped
     command:
+      - "--realm=${DOMAIN}"
+      - "--listening-ip=${EXTERNAL_IPv4}"
       - "--external-ip=${EXTERNAL_IPv4}/${EXTERNAL_IPv4}"
       - "--external-ip=${EXTERNAL_IPv6:-::1}/${EXTERNAL_IPv6:-::1}"
       - "--static-auth-secret=${TURN_SECRET}"
