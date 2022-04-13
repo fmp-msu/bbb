@@ -63,6 +63,7 @@ services:
       - bigbluebutton:/var/bigbluebutton
       - vol-freeswitch:/var/freeswitch/meetings
       - vol-kurento:/var/kurento
+      - ./mod/bbb-web/WEB-INF/classes/bigbluebutton.properties:/usr/share/bbb-web/WEB-INF/classes/bigbluebutton.properties
     networks:
       bbb-net:
         ipv4_address: 10.7.7.2
