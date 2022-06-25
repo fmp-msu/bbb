@@ -1,6 +1,6 @@
 #!/bin/bash
 
-backups_dir="backups/mysql"
+backups_dir="backups/greenlight"
 
 cd $(dirname $BASH_SOURCE)
 docker-compose exec -T postgres pg_dumpall -c -U postgres > $backups_dir/`date +%d-%m-%Y"_"%H_%M_%S`.sql
